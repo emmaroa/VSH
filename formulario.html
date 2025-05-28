@@ -1,154 +1,134 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Formulario de Cotización</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #f8f9fa, #e9ecef);
-      padding: 20px;
-      color: #333;
-    }
-
-    .formulario {
-      background-color: white;
-      padding: 30px;
-      border-radius: 15px;
-      max-width: 800px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-      color: #007BFF;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    .concepto {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .concepto input {
-      flex: 1;
-    }
-
-    button {
-      margin-top: 20px;
-      background-color: #007BFF;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    #agregarConcepto {
-      background-color: #6c757d;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Formulario de Cotización</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f4f8;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+  }
+  #conceptos {
+    min-height: 80px;
+  }
+  button {
+    margin-top: 20px;
+    background: #1565c0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0d3c91;
+  }
+  #response {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
 </head>
 <body>
-  <div class="formulario">
-    <h1>Formulario de Cotización</h1>
 
-    <label for="cliente">Cliente</label>
-    <input type="text" id="cliente">
+<h1>Formulario de Cotización</h1>
 
-    <label for="dependencia">Dependencia</label>
-    <input type="text" id="dependencia">
+<form id="cotizacionForm">
 
-    <label for="atencion">Con Atención a</label>
-    <input type="text" id="atencion">
+  <label for="cliente">Cliente:</label>
+  <input type="text" id="cliente" name="cliente" required />
 
-    <h3>Conceptos</h3>
-    <div id="conceptos">
-      <div class="concepto">
-        <input type="number" placeholder="Cantidad" class="cantidad">
-        <input type="text" placeholder="Descripción" class="descripcion">
-        <input type="number" step="0.01" placeholder="Precio" class="precio">
-      </div>
-    </div>
-    <button type="button" id="agregarConcepto" onclick="agregarConcepto()">Agregar otro concepto</button>
+  <label for="dependencia">Dependencia:</label>
+  <input type="text" id="dependencia" name="dependencia" required />
 
-    <button onclick="guardarDatos()">Guardar y Generar Cotización</button>
-  </div>
+  <label for="atencion">Con Atención a:</label>
+  <input type="text" id="atencion" name="atencion" required />
 
-  <script>
-    function agregarConcepto() {
-      const container = document.createElement('div');
-      container.className = 'concepto';
-      container.innerHTML = `
-        <input type="number" placeholder="Cantidad" class="cantidad">
-        <input type="text" placeholder="Descripción" class="descripcion">
-        <input type="number" step="0.01" placeholder="Precio" class="precio">
-      `;
-      document.getElementById('conceptos').appendChild(container);
-    }
+  <label for="conceptos">Conceptos (una línea por concepto):</label>
+  <textarea id="conceptos" name="conceptos" placeholder="Ejemplo: Producto A - $100&#10;Producto B - $200" required></textarea>
 
-    function guardarDatos() {
-      const cliente = document.getElementById('cliente').value;
-      const dependencia = document.getElementById('dependencia').value;
-      const atencion = document.getElementById('atencion').value;
+  <label for="subtotal">Subtotal:</label>
+  <input type="number" id="subtotal" name="subtotal" min="0" step="0.01" required />
 
-      const conceptos = [];
-      document.querySelectorAll('.concepto').forEach(c => {
-        const cantidad = parseFloat(c.querySelector('.cantidad').value);
-        const descripcion = c.querySelector('.descripcion').value;
-        const precio = parseFloat(c.querySelector('.precio').value);
-        if (!isNaN(cantidad) && !isNaN(precio)) {
-          conceptos.push({ cantidad, descripcion, precio });
-        }
+  <label for="iva">IVA (16%):</label>
+  <input type="number" id="iva" name="iva" min="0" step="0.01" readonly />
+
+  <label for="total">Total:</label>
+  <input type="number" id="total" name="total" min="0" step="0.01" readonly />
+
+  <button type="submit">Enviar Cotización</button>
+
+</form>
+
+<div id="response"></div>
+
+<script>
+  const form = document.getElementById('cotizacionForm');
+  const subtotalInput = document.getElementById('subtotal');
+  const ivaInput = document.getElementById('iva');
+  const totalInput = document.getElementById('total');
+  const responseDiv = document.getElementById('response');
+
+  // Calcula IVA y Total cuando cambia el subtotal
+  subtotalInput.addEventListener('input', () => {
+    const subtotal = parseFloat(subtotalInput.value) || 0;
+    const iva = +(subtotal * 0.16).toFixed(2);
+    const total = +(subtotal + iva).toFixed(2);
+    ivaInput.value = iva;
+    totalInput.value = total;
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+      cliente: form.cliente.value,
+      dependencia: form.dependencia.value,
+      atencion: form.atencion.value,
+      conceptos: form.conceptos.value,
+      subtotal: form.subtotal.value,
+      iva: form.iva.value,
+      total: form.total.value,
+    };
+
+    try {
+      const response = await fetch('TU_WEB_APP_URL_AQUI', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
 
-      const subtotal = conceptos.reduce((acc, c) => acc + (c.cantidad * c.precio), 0);
-      const iva = +(subtotal * 0.16).toFixed(2);
-      const total = +(subtotal + iva).toFixed(2);
-      const folio = String(Math.floor(Math.random() * 9999)).padStart(4, '0') + '-' + new Date().getFullYear();
+      if (!response.ok) throw new Error('Error en la respuesta del servidor');
 
-      const data = {
-        cliente,
-        dependencia,
-        atencion,
-        conceptos,
-        subtotal: subtotal.toFixed(2),
-        iva: iva.toFixed(2),
-        total: total.toFixed(2),
-        folio
-      };
+      const result = await response.json();
 
-      fetch('https://script.google.com/macros/s/AKfycbxT1B4NDcZuvB3L1_GDXQp8Rk-hF1S7DK45xHuwrckNFIeWLztxrvLkdSjpoFSk43X38A/exec', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(r => r.json())
-      .then(res => {
-        console.log(res);
-        localStorage.setItem('cotizacionActual', JSON.stringify(data));
-        window.location.href = 'cotizacion.html';
-      })
-      .catch(err => alert('Error al guardar en Sheets: ' + err));
+      responseDiv.style.color = 'green';
+      responseDiv.textContent = result.message;
+
+      form.reset();
+      ivaInput.value = '';
+      totalInput.value = '';
+
+    } catch (error) {
+      responseDiv.style.color = 'red';
+      responseDiv.textContent = 'Error al guardar en Sheets: ' + error.message;
     }
-  </script>
+  });
+</script>
+
 </body>
 </html>
 
