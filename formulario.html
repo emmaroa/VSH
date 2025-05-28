@@ -2,154 +2,143 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Cotización</title>
+  <title>Formulario de Cotización</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
+      background: #f1f5f9;
       margin: 0;
-      background: #f8fafc;
       padding: 2rem;
-      position: relative;
     }
 
-    .marca-agua {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0.08;
-      z-index: 0;
-      width: 70%;
-    }
-
-    .contenedor {
-      background: white;
+    .formulario {
+      max-width: 800px;
+      background: #fff;
+      margin: auto;
       padding: 2rem;
       border-radius: 12px;
-      max-width: 900px;
-      margin: auto;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-      position: relative;
-      z-index: 1;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
     }
 
-    .encabezado {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    .logo {
-      max-height: 80px;
-    }
-
-    .titulo {
-      font-size: 1.5rem;
+    h1 {
       color: #1e3a8a;
+      text-align: center;
+      margin-bottom: 1.5rem;
     }
 
-    .datos {
-      margin-bottom: 2rem;
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
     }
 
-    .datos p {
-      margin: 0.3rem 0;
-    }
-
-    table {
+    input, button {
       width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 2rem;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      margin-top: 0.3rem;
     }
 
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 0.8rem;
-      text-align: left;
+    .concepto {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
     }
 
-    th {
-      background-color: #eff6ff;
+    .concepto input {
+      flex: 1;
     }
 
-    .totales {
-      text-align: right;
-      font-size: 1rem;
+    .btn-agregar, .btn-guardar {
+      margin-top: 1.5rem;
+      background: #1e3a8a;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
     }
 
-    .totales div {
-      margin-bottom: 0.5rem;
+    .btn-agregar:hover, .btn-guardar:hover {
+      background: #3b82f6;
     }
   </style>
 </head>
 <body>
 
-  <!-- Marca de agua -->
-  <img src="logo.png" class="marca-agua" alt="Marca de agua">
+  <form class="formulario" onsubmit="guardarDatos(); return false;">
+    <h1>Formulario de Cotización</h1>
 
-  <div class="contenedor">
-    <div class="encabezado">
-      <img src="logo.png" alt="Logo" class="logo">
-      <div class="titulo">Cotización N.º <span id="cot-numero">0001</span></div>
+    <label for="cliente">Cliente</label>
+    <input type="text" id="cliente" required>
+
+    <label for="dependencia">Dependencia</label>
+    <input type="text" id="dependencia" required>
+
+    <label for="atencion">Con Atención a:</label>
+    <input type="text" id="atencion" required>
+
+    <div id="lista-conceptos">
+      <h3>Conceptos</h3>
+      <div class="concepto">
+        <input type="number" placeholder="Cantidad" class="cantidad" required>
+        <input type="text" placeholder="Descripción" class="descripcion" required>
+        <input type="number" placeholder="Precio Unitario" class="precio" step="0.01" required>
+      </div>
     </div>
 
-    <div class="datos">
-      <p><strong>Cliente:</strong> <span id="cot-cliente"></span></p>
-      <p><strong>Dependencia:</strong> <span id="cot-dependencia"></span></p>
-      <p><strong>Con Atención a:</strong> <span id="cot-atencion"></span></p>
-      <p><strong>Fecha:</strong> <span id="cot-fecha"></span></p>
-    </div>
-
-    <table id="tabla-conceptos">
-      <thead>
-        <tr>
-          <th>Cantidad</th>
-          <th>Descripción</th>
-          <th>Precio Unitario</th>
-          <th>Importe</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Se llena con JavaScript -->
-      </tbody>
-    </table>
-
-    <div class="totales">
-      <div><strong>Subtotal:</strong> $<span id="cot-subtotal">0.00</span></div>
-      <div><strong>IVA (16%):</strong> $<span id="cot-iva">0.00</span></div>
-      <div><strong>Total:</strong> $<span id="cot-total">0.00</span></div>
-    </div>
-  </div>
+    <button type="button" class="btn-agregar" onclick="agregarConcepto()">+ Agregar otro concepto</button>
+    <button type="submit" class="btn-guardar">Guardar y ver cotización</button>
+  </form>
 
   <script>
-    // Simular carga de localStorage
-    const datos = JSON.parse(localStorage.getItem('cotizacionActual'));
+    function agregarConcepto() {
+      const lista = document.getElementById('lista-conceptos');
+      const div = document.createElement('div');
+      div.className = 'concepto';
+      div.innerHTML = `
+        <input type="number" placeholder="Cantidad" class="cantidad" required>
+        <input type="text" placeholder="Descripción" class="descripcion" required>
+        <input type="number" placeholder="Precio Unitario" class="precio" step="0.01" required>
+      `;
+      lista.appendChild(div);
+    }
 
-    if (datos) {
-      document.getElementById('cot-numero').textContent = datos.numero;
-      document.getElementById('cot-cliente').textContent = datos.cliente;
-      document.getElementById('cot-dependencia').textContent = datos.dependencia;
-      document.getElementById('cot-atencion').textContent = datos.atencion;
-      document.getElementById('cot-fecha').textContent = new Date().toLocaleDateString();
+    function guardarDatos() {
+      const cliente = document.getElementById('cliente').value;
+      const dependencia = document.getElementById('dependencia').value;
+      const atencion = document.getElementById('atencion').value;
 
-      // Agregar conceptos
-      const tablaBody = document.querySelector('#tabla-conceptos tbody');
-      datos.conceptos.forEach(c => {
-        const fila = document.createElement('tr');
-        fila.innerHTML = `
-          <td>${c.cantidad}</td>
-          <td>${c.descripcion}</td>
-          <td>$${parseFloat(c.precio).toFixed(2)}</td>
-          <td>$${(c.cantidad * c.precio).toFixed(2)}</td>
-        `;
-        tablaBody.appendChild(fila);
+      const conceptos = [];
+      document.querySelectorAll('.concepto').forEach(c => {
+        const cantidad = parseFloat(c.querySelector('.cantidad').value);
+        const descripcion = c.querySelector('.descripcion').value;
+        const precio = parseFloat(c.querySelector('.precio').value);
+        if (!isNaN(cantidad) && !isNaN(precio)) {
+          conceptos.push({ cantidad, descripcion, precio });
+        }
       });
 
-      document.getElementById('cot-subtotal').textContent = datos.subtotal;
-      document.getElementById('cot-iva').textContent = datos.iva;
-      document.getElementById('cot-total').textContent = datos.total;
+      const subtotal = conceptos.reduce((acc, c) => acc + (c.cantidad * c.precio), 0);
+      const iva = +(subtotal * 0.16).toFixed(2);
+      const total = +(subtotal + iva).toFixed(2);
+
+      const folio = String(Math.floor(Math.random() * 9999)).padStart(4, '0') + '-' + new Date().getFullYear();
+
+      localStorage.setItem('cotizacionActual', JSON.stringify({
+        numero: folio,
+        cliente,
+        dependencia,
+        atencion,
+        conceptos,
+        subtotal: subtotal.toFixed(2),
+        iva: iva.toFixed(2),
+        total: total.toFixed(2)
+      }));
+
+      window.location.href = 'cotizacion.html';
     }
   </script>
+
 </body>
 </html>
