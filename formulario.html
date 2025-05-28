@@ -16,24 +16,40 @@
     <label>Descripción: <input type="text" id="descripcion" required></label><br><br>
     <label>Cantidad: <input type="number" id="cantidad" required></label><br><br>
     <label>Precio Unitario: <input type="number" id="precio" required></label><br><br>
+    <label>Dependencia: <input type="text" id="dependencia" required></label><br><br>
 
     <button type="submit">Generar Cotización</button>
   </form>
 
-  <script>
-    function guardarDatos() {
-      const datos = {
-        cliente: document.getElementById('cliente').value,
-        direccion: document.getElementById('direccion').value,
-        telefono: document.getElementById('telefono').value,
-        email: document.getElementById('email').value,
-        descripcion: document.getElementById('descripcion').value,
-        cantidad: document.getElementById('cantidad').value,
-        precio: document.getElementById('precio').value
-      };
-      localStorage.setItem('cotizacion', JSON.stringify(datos));
-      window.location.href = 'cotizacion.html';
-    }
-  </script>
+ <script>
+  function guardarDatos() {
+    const datos = {
+      cliente: document.getElementById('cliente').value,
+      direccion: document.getElementById('direccion').value,
+      telefono: document.getElementById('telefono').value,
+      email: document.getElementById('email').value,
+      dependencia: document.getElementById('dependencia').value,
+      descripcion: document.getElementById('descripcion').value,
+      cantidad: parseFloat(document.getElementById('cantidad').value),
+      precio: parseFloat(document.getElementById('precio').value)
+    };
+
+    localStorage.setItem('cotizacion', JSON.stringify(datos));
+
+    fetch("https://script.google.com/macros/s/TU_URL/exec", {
+      method: "POST",
+      body: JSON.stringify(datos),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then(res => res.text())
+    .then(() => {
+      window.location.href = "cotizacion.html";
+    })
+    .catch(err => alert("Error al enviar a Google Sheets: " + err));
+  }
+</script>
+
 </body>
 </html>
