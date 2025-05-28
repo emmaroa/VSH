@@ -3,82 +3,188 @@
 <head>
   <meta charset="UTF-8">
   <title>Formulario de Cotización</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .logo {
+      max-width: 150px;
+      margin-bottom: 1rem;
+    }
+    .grupo {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background-color: #e5e7eb;
+    }
+    .boton {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; padding: 20px; background-color: #f4f6f8;">
+<body>
+  <header>
+    <h1>Formulario de Cotización</h1>
+  </header>
 
-  <h2>Datos del Cliente</h2>
-  <label>Cliente: <input type="text" id="cliente" required></label><br>
-  <label>Dependencia: <input type="text" id="dependencia" required></label><br>
-  <label>Con Atención a: <input type="text" id="atencion" required></label><br><br>
+  <div class="container">
+    <img src="logo.png" alt="Logo" class="logo">
 
-  <h2>Conceptos</h2>
-  <div id="conceptos">
-    <div class="concepto">
-      <input type="text" placeholder="Descripción" class="descripcion" required>
-      <input type="number" placeholder="Cantidad" class="cantidad" required>
-      <input type="number" placeholder="Precio Unitario" class="precio" required>
+    <div class="grupo">
+      <label for="cliente">Cliente</label>
+      <input type="text" id="cliente" required>
     </div>
-  </div>
-  <button type="button" onclick="agregarConcepto()">Agregar otro concepto</button><br><br>
+    <div class="grupo">
+      <label for="dependencia">Dependencia</label>
+      <input type="text" id="dependencia">
+    </div>
+    <div class="grupo">
+      <label for="atencion">Con Atención a:</label>
+      <input type="text" id="atencion">
+    </div>
 
-  <button onclick="guardarDatos()">Generar Cotización</button>
+    <table id="tabla-conceptos">
+      <thead>
+        <tr>
+          <th>Cantidad</th>
+          <th>Descripción</th>
+          <th>Precio Unitario</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="item">
+          <td><input type="number" class="cantidad"></td>
+          <td><input type="text" class="descripcion"></td>
+          <td><input type="number" class="precio" step="0.01"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button type="button" class="boton" onclick="agregarFila()">+ Agregar concepto</button>
+    <button type="button" class="boton" onclick="guardarDatos()">Guardar Cotización</button>
+  </div>
 
   <script>
-    function agregarConcepto() {
-      const div = document.createElement('div');
-      div.classList.add('concepto');
-      div.innerHTML = `
-        <input type="text" placeholder="Descripción" class="descripcion" required>
-        <input type="number" placeholder="Cantidad" class="cantidad" required>
-        <input type="number" placeholder="Precio Unitario" class="precio" required>
-      `;
-      document.getElementById('conceptos').appendChild(div);
+    function agregarFila() {
+      const tabla = document.querySelector('#tabla-conceptos tbody');
+      const fila = tabla.rows[0].cloneNode(true);
+      fila.querySelectorAll('input').forEach(input => input.value = '');
+      tabla.appendChild(fila);
     }
 
-    function guardarDatos() {
-      const descripciones = document.querySelectorAll('.descripcion');
-      const cantidades = document.querySelectorAll('.cantidad');
-      const precios = document.querySelectorAll('.precio');
+    function obtenerNumeroCotizacion() {
+      let num = localStorage.getItem('numeroCotizacion');
+      num = num ? parseInt(num) + 1 : 1;
+      localStorage.setItem('numeroCotizacion', num);
+      return num;
+    }
 
-      const items = [];
+    function calcularTotales() {
       let subtotal = 0;
-
-      for (let i = 0; i < descripciones.length; i++) {
-        const descripcion = descripciones[i].value;
-        const cantidad = parseFloat(cantidades[i].value);
-        const precio = parseFloat(precios[i].value);
-        const total = cantidad * precio;
-        items.push({ descripcion, cantidad, precio, total });
-        subtotal += total;
-      }
-
+      document.querySelectorAll('.item').forEach(fila => {
+        const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
+        const precio = parseFloat(fila.querySelector('.precio').value) || 0;
+        subtotal += cantidad * precio;
+      });
       const iva = subtotal * 0.16;
-      const totalFinal = subtotal + iva;
+      const total = subtotal + iva;
+      return {
+        subtotal: subtotal.toFixed(2),
+        iva: iva.toFixed(2),
+        total: total.toFixed(2)
+      };
+    }
+
+    function obtenerConceptosTexto() {
+      const conceptos = [];
+      document.querySelectorAll('.item').forEach(fila => {
+        const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
+        const descripcion = fila.querySelector('.descripcion').value.trim();
+        const precio = parseFloat(fila.querySelector('.precio').value) || 0;
+        if (cantidad > 0 && descripcion) {
+          conceptos.push(`${cantidad} x ${descripcion} - $${(cantidad * precio).toFixed(2)}`);
+        }
+      });
+      return conceptos.join(', ');
+    }
+
+    async function guardarDatos() {
+      const numero = obtenerNumeroCotizacion();
+      const cliente = document.getElementById('cliente').value;
+      const dependencia = document.getElementById('dependencia').value;
+      const atencion = document.getElementById('atencion').value;
+      const totales = calcularTotales();
+      const conceptosTexto = obtenerConceptosTexto();
 
       const datos = {
-        cliente: document.getElementById('cliente').value,
-        dependencia: document.getElementById('dependencia').value,
-        atencion: document.getElementById('atencion').value,
-        items: items,
-        subtotal: subtotal,
-        iva: iva,
-        total: totalFinal
+        numero,
+        cliente,
+        dependencia,
+        atencion,
+        conceptos: conceptosTexto,
+        subtotal: totales.subtotal,
+        iva: totales.iva,
+        total: totales.total
       };
 
-      localStorage.setItem('cotizacion', JSON.stringify(datos));
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbXXXXXXXXXXX/exec'; // ← Reemplaza con tu URL
 
-      fetch("https://script.google.com/macros/s/AKfycbzPzorbbw77_mJ9z32eztHSD1d6Xnm_aSSdLmZncBz1I4aC-LTZMswgprnyS3rfcyU0kQ/exec", {
-        method: "POST",
-        body: JSON.stringify(datos),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(res => res.text())
-      .then(() => {
-        window.location.href = "cotizacion.html";
-      })
-      .catch(err => alert("Error al enviar a Google Sheets: " + err));
+      try {
+        const respuesta = await fetch(scriptURL, {
+          method: 'POST',
+          body: new URLSearchParams(datos)
+        });
+        const resultado = await respuesta.json();
+        alert(resultado.message);
+      } catch (err) {
+        alert("Error al enviar los datos.");
+        console.error(err);
+      }
     }
   </script>
 </body>
