@@ -2,35 +2,40 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Formulario de Cotización</title>
+  <title>Formulario Cotización</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 20px auto;
-      background: #f4f6f8;
+      background: #f0f0f0;
+      margin: 20px;
       color: #333;
     }
-    h1 {
+    header {
+      background: #2a4d8f;
+      color: white;
+      padding: 15px;
       text-align: center;
-      color: #444;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
     label {
       display: block;
-      margin: 8px 0 4px;
-      font-weight: bold;
+      margin-top: 15px;
+      font-weight: 600;
     }
-    input[type="text"], input[type="number"] {
+    input[type=text], input[type=number] {
       width: 100%;
       padding: 8px;
+      margin-top: 5px;
       box-sizing: border-box;
+      border: 1px solid #999;
       border-radius: 4px;
-      border: 1px solid #aaa;
     }
     table {
       width: 100%;
+      margin-top: 20px;
       border-collapse: collapse;
-      margin-top: 15px;
       background: white;
     }
     th, td {
@@ -39,228 +44,172 @@
       text-align: center;
     }
     th {
-      background: #ddd;
+      background: #2a4d8f;
+      color: white;
     }
-    .btn {
-      background-color: #4a6fa5;
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      background: #2a4d8f;
       border: none;
       color: white;
-      padding: 10px 20px;
       font-weight: bold;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 15px;
+      box-shadow: 0 4px 6px rgba(42,77,143,0.6);
     }
-    .btn:hover {
-      background-color: #3a5980;
+    button:hover {
+      background: #1e3670;
     }
     #addConcepto {
-      margin-top: 10px;
-      background: #5a7db8;
-    }
-    #addConcepto:hover {
-      background: #486797;
-    }
-    .totales {
-      margin-top: 15px;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      max-width: 320px;
-      float: right;
-    }
-    .totales div {
-      margin-bottom: 8px;
-      font-weight: bold;
-      font-size: 1.1em;
-    }
-    .clearfix::after {
-      content: "";
-      display: table;
-      clear: both;
+      background: #4a6ecc;
+      margin-left: 10px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
 
-  <h1>Formulario de Cotización</h1>
+<header>Formulario Cotización</header>
 
-  <form id="cotizacionForm">
+<form id="cotizacionForm">
 
-    <label for="fecha">Fecha:</label>
-    <input type="date" id="fecha" required />
+  <label for="fecha">Fecha:</label>
+  <input type="date" id="fecha" name="fecha" required />
 
-    <label for="cliente">Cliente:</label>
-    <input type="text" id="cliente" placeholder="Nombre del cliente" required />
+  <label for="cliente">Cliente:</label>
+  <input type="text" id="cliente" name="cliente" required />
 
-    <label for="dependencia">Dependencia:</label>
-    <input type="text" id="dependencia" placeholder="Dependencia" required />
+  <label for="dependencia">Dependencia:</label>
+  <input type="text" id="dependencia" name="dependencia" required />
 
-    <label for="atencion">Con Atención a:</label>
-    <input type="text" id="atencion" placeholder="Nombre persona atención" required />
+  <label for="atencion">Con Atención a:</label>
+  <input type="text" id="atencion" name="atencion" required />
 
-    <table id="conceptosTable">
-      <thead>
-        <tr>
-          <th>Cantidad</th>
-          <th>Concepto</th>
-          <th>Precio Unitario</th>
-          <th>Eliminar</th>
-        </tr>
-      </thead>
-      <tbody id="conceptosBody">
-        <!-- filas de conceptos -->
-      </tbody>
-    </table>
+  <label>Conceptos:</label>
+  <table id="conceptosTable">
+    <thead>
+      <tr>
+        <th>Cantidad</th>
+        <th>Concepto</th>
+        <th>Precio Unitario ($)</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="number" min="1" step="1" class="cantidad" required></td>
+        <td><input type="text" class="concepto" required></td>
+        <td><input type="number" min="0" step="0.01" class="precioUnitario" required></td>
+        <td><button type="button" class="removeRowBtn">Eliminar</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="button" id="addConcepto">Agregar Concepto</button>
 
-    <button type="button" class="btn" id="addConcepto">Agregar Concepto</button>
+  <button type="submit">Enviar Cotización</button>
+</form>
 
-    <div class="totales clearfix">
-      <div>Subtotal: $<span id="subtotal">0.00</span></div>
-      <div>IVA (16%): $<span id="iva">0.00</span></div>
-      <div>Total: $<span id="total">0.00</span></div>
-    </div>
+<script>
+  // Añadir fila para concepto nuevo
+  document.getElementById('addConcepto').addEventListener('click', () => {
+    const tbody = document.querySelector('#conceptosTable tbody');
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td><input type="number" min="1" step="1" class="cantidad" required></td>
+      <td><input type="text" class="concepto" required></td>
+      <td><input type="number" min="0" step="0.01" class="precioUnitario" required></td>
+      <td><button type="button" class="removeRowBtn">Eliminar</button></td>
+    `;
+    tbody.appendChild(newRow);
+  });
 
-    <div style="clear: both;"></div>
-
-    <button type="submit" class="btn">Guardar Cotización</button>
-  </form>
-
-  <script>
-    const conceptosBody = document.getElementById('conceptosBody');
-    const addConceptoBtn = document.getElementById('addConcepto');
-
-    // Función para crear fila nueva concepto
-    function crearFilaConcepto(cantidad = '', concepto = '', precioUnitario = '') {
-      const tr = document.createElement('tr');
-
-      tr.innerHTML = `
-        <td><input type="number" min="1" value="${cantidad}" class="cantidad" required></td>
-        <td><input type="text" value="${concepto}" class="concepto" required></td>
-        <td><input type="number" min="0" step="0.01" value="${precioUnitario}" class="precioUnitario" required></td>
-        <td><button type="button" class="btn eliminarBtn" style="background:#d9534f;">X</button></td>
-      `;
-
-      // Evento para eliminar fila
-      tr.querySelector('.eliminarBtn').addEventListener('click', () => {
-        tr.remove();
-        calcularTotales();
-      });
-
-      // Evento para recalcular totales al cambiar valores
-      tr.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', calcularTotales);
-      });
-
-      return tr;
+  // Eliminar fila
+  document.querySelector('#conceptosTable tbody').addEventListener('click', (e) => {
+    if(e.target.classList.contains('removeRowBtn')){
+      const rows = document.querySelectorAll('#conceptosTable tbody tr');
+      if(rows.length > 1){
+        e.target.closest('tr').remove();
+      } else {
+        alert('Debe haber al menos un concepto.');
+      }
     }
+  });
 
-    // Agregar primera fila inicialmente
-    conceptosBody.appendChild(crearFilaConcepto());
+  // Enviar datos a Apps Script y abrir cotización para imprimir
+  document.getElementById('cotizacionForm').addEventListener('submit', async function(e){
+    e.preventDefault();
 
-    addConceptoBtn.addEventListener('click', () => {
-      conceptosBody.appendChild(crearFilaConcepto());
-    });
+    // Leer datos del formulario
+    const fecha = document.getElementById('fecha').value;
+    const cliente = document.getElementById('cliente').value.trim();
+    const dependencia = document.getElementById('dependencia').value.trim();
+    const atencion = document.getElementById('atencion').value.trim();
 
-    function calcularTotales() {
-      let subtotal = 0;
-      const filas = conceptosBody.querySelectorAll('tr');
-      filas.forEach(tr => {
-        const cantidad = parseFloat(tr.querySelector('.cantidad').value) || 0;
-        const precioUnitario = parseFloat(tr.querySelector('.precioUnitario').value) || 0;
-        subtotal += cantidad * precioUnitario;
-      });
-      const iva = subtotal * 0.16;
-      const total = subtotal + iva;
-
-      document.getElementById('subtotal').textContent = subtotal.toFixed(2);
-      document.getElementById('iva').textContent = iva.toFixed(2);
-      document.getElementById('total').textContent = total.toFixed(2);
-    }
-
-    // Recalcular totales cada vez que cambien inputs en la tabla
-    conceptosBody.addEventListener('input', calcularTotales);
-
-    // Al enviar formulario:
-    document.getElementById('cotizacionForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      // Recolectar datos
-      const fecha = document.getElementById('fecha').value;
-      const cliente = document.getElementById('cliente').value.trim();
-      const dependencia = document.getElementById('dependencia').value.trim();
-      const atencion = document.getElementById('atencion').value.trim();
-
-      // Validar que haya fecha
-      if (!fecha) {
-        alert("Por favor selecciona la fecha.");
+    // Leer conceptos
+    const conceptos = [];
+    const filas = document.querySelectorAll('#conceptosTable tbody tr');
+    for(const fila of filas){
+      const cantidad = parseInt(fila.querySelector('.cantidad').value);
+      const concepto = fila.querySelector('.concepto').value.trim();
+      const precioUnitario = parseFloat(fila.querySelector('.precioUnitario').value);
+      if(isNaN(cantidad) || !concepto || isNaN(precioUnitario)){
+        alert('Por favor, completa todos los campos de conceptos correctamente.');
         return;
       }
+      conceptos.push({ cantidad, concepto, precioUnitario });
+    }
 
-      // Validar que haya al menos un concepto
-      const conceptos = [];
-      const filas = conceptosBody.querySelectorAll('tr');
-      if (filas.length === 0) {
-        alert("Agrega al menos un concepto.");
-        return;
-      }
-
-      for (const tr of filas) {
-        const cantidad = parseFloat(tr.querySelector('.cantidad').value);
-        const concepto = tr.querySelector('.concepto').value.trim();
-        const precioUnitario = parseFloat(tr.querySelector('.precioUnitario').value);
-
-        if (!cantidad || !concepto || !precioUnitario) {
-          alert("Por favor llena todos los campos de conceptos correctamente.");
-          return;
-        }
-        conceptos.push({ cantidad, concepto, precioUnitario });
-      }
-
-      const subtotal = parseFloat(document.getElementById('subtotal').textContent);
-      const iva = parseFloat(document.getElementById('iva').textContent);
-      const total = parseFloat(document.getElementById('total').textContent);
-
-      const data = {
-        fecha,
-        cliente,
-        dependencia,
-        atencion,
-        conceptos,
-        subtotal,
-        iva,
-        total
-      };
-
-      // Enviar datos al Apps Script
-      fetch("TU_URL_DE_APPS_SCRIPT_AQUI", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(response => response.json())
-      .then(resp => {
-        if (resp.result === "success") {
-          alert("Cotización guardada correctamente!");
-          this.reset();
-          conceptosBody.innerHTML = '';
-          conceptosBody.appendChild(crearFilaConcepto());
-          calcularTotales();
-        } else {
-          alert("Error guardando la cotización.");
-        }
-      })
-      .catch(err => {
-        alert("Error al conectar con Google Sheets: " + err.message);
-      });
+    // Calcular subtotal, iva y total
+    let subtotal = 0;
+    conceptos.forEach(c => {
+      subtotal += c.cantidad * c.precioUnitario;
     });
+    const iva = subtotal * 0.16;
+    const total = subtotal + iva;
 
-    // Calcular totales iniciales
-    calcularTotales();
-  </script>
+    // Preparar datos para enviar
+    const dataToSend = {
+      fecha,
+      cliente,
+      dependencia,
+      atencion,
+      conceptos: JSON.stringify(conceptos), // Guardamos como texto en Sheets
+      subtotal: subtotal.toFixed(2),
+      iva: iva.toFixed(2),
+      total: total.toFixed(2),
+    };
+
+    try {
+      // Cambia esta URL por la URL de tu Apps Script desplegado como Web App
+      const url = 'TU_URL_DE_APPS_SCRIPT';
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: new URLSearchParams(dataToSend),
+      });
+      const result = await response.json();
+
+      if(result.status === 'success'){
+        alert('Cotización guardada correctamente! Se abrirá la plantilla para imprimir.');
+        // Abrir plantilla cotización con datos
+        const printWindow = window.open('cotizacion.html', '_blank');
+        printWindow.cotizacionData = {
+          fecha,
+          cliente,
+          dependencia,
+          atencion,
+          conceptos,
+        };
+      } else {
+        alert('Error al guardar: ' + result.message);
+      }
+    } catch (error) {
+      alert('Error al conectar con el servidor: ' + error.message);
+    }
+  });
+</script>
 
 </body>
 </html>
