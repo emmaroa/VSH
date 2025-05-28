@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cotización</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+    .cotizacion {
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      background: #ffffff;
+      border: 2px solid #d0d0d0;
+      border-radius: 10px;
+    }
+    .encabezado {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #007BFF;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      width: 150px;
+    }
+    .empresa-info {
+      text-align: right;
+      color: #555;
+    }
+    h1 {
+      text-align: center;
+      margin: 40px 0;
+      color: #007BFF;
+    }
+    .datos-cliente, .info-cotizacion {
+      margin-bottom: 20px;
+      color: #444;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    table th {
+      background-color: #e6f0ff;
+      color: #003366;
+    }
+    table td {
+      background-color: #f9f9f9;
+    }
+    .total {
+      text-align: right;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #003366;
+    }
+    .notas {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #666;
+    }
+    .boton-imprimir {
+      text-align: center;
+      margin: 40px 0 20px 0;
+    }
+    .boton-imprimir button {
+      background-color: #007BFF;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .boton-imprimir button:hover {
+      background-color: #0056b3;
+    }
+
+    @media print {
+      .boton-imprimir {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body onload="cargarCotizacion()">
+
+  <div class="cotizacion">
+
+    <div class="boton-imprimir">
+      <button onclick="window.print()">Imprimir / Guardar como PDF</button>
+    </div>
+
+    <div class="encabezado">
+      <img src="logo-empresa.png" alt="Logo Empresa" class="logo">
+      <div class="empresa-info">
+        <strong>Nombre de la Empresa</strong><br>
+        Dirección de la empresa<br>
+        Teléfono: (000) 000 0000<br>
+        Email: empresa@correo.com
+      </div>
+    </div>
+
+    <h1>Cotización</h1>
+
+    <div class="info-cotizacion">
+      <strong>Número de cotización:</strong> 0001<br>
+      <strong>Fecha:</strong> <span id="fecha"></span>
+    </div>
+
+    <div class="datos-cliente" id="datos-cliente"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-items"></tbody>
+    </table>
+
+    <div class="total" id="total"></div>
+
+    <div class="notas">
+      <strong>Notas / Condiciones:</strong><br>
+      Esta cotización es válida por 15 días. Los precios incluyen IVA.
+    </div>
+
+  </div>
+
+  <script>
+    function cargarCotizacion() {
+      const datos = JSON.parse(localStorage.getItem('cotizacion'));
+      const subtotal = datos.cantidad * datos.precio;
+
+      // Fecha actual
+      document.getElementById('fecha').innerText = new Date().toLocaleDateString('es-MX');
+
+      // Datos del cliente
+      document.getElementById('datos-cliente').innerHTML = `
+        <strong>Cliente:</strong> ${datos.cliente}<br>
+        ${datos.direccion}<br>
+        Teléfono: ${datos.telefono}<br>
+        Email: ${datos.email}
+      `;
+
+      // Tabla
+      document.getElementById('tabla-items').innerHTML = `
+        <tr>
+          <td>${datos.descripcion}</td>
+          <td>${datos.cantidad}</td>
+          <td>$${Number(datos.precio).toFixed(2)}</td>
+          <td>$${subtotal.toFixed(2)}</td>
+        </tr>
+      `;
+
+      // Total
+      document.getElementById('total').innerText = `Total: $${subtotal.toFixed(2)}`;
+    }
+  </script>
+
+</body>
+</html>
