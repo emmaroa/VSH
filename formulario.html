@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario de Cotización</title>
+</head>
+<body>
+  <h2>Formulario de Cotización</h2>
+
+  <form onsubmit="guardarDatos(); return false;">
+    <label>Cliente: <input type="text" id="cliente" required></label><br><br>
+    <label>Dirección: <input type="text" id="direccion" required></label><br><br>
+    <label>Teléfono: <input type="text" id="telefono" required></label><br><br>
+    <label>Email: <input type="email" id="email" required></label><br><br>
+
+    <label>Descripción: <input type="text" id="descripcion" required></label><br><br>
+    <label>Cantidad: <input type="number" id="cantidad" required></label><br><br>
+    <label>Precio Unitario: <input type="number" id="precio" required></label><br><br>
+
+    <button type="submit">Generar Cotización</button>
+  </form>
+
+  <script>
+    function guardarDatos() {
+      const datos = {
+        cliente: document.getElementById('cliente').value,
+        direccion: document.getElementById('direccion').value,
+        telefono: document.getElementById('telefono').value,
+        email: document.getElementById('email').value,
+        descripcion: document.getElementById('descripcion').value,
+        cantidad: document.getElementById('cantidad').value,
+        precio: document.getElementById('precio').value
+      };
+      localStorage.setItem('cotizacion', JSON.stringify(datos));
+      window.location.href = 'cotizacion.html';
+    }
+  </script>
+</body>
+</html>
