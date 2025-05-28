@@ -5,103 +5,101 @@
   <title>Formulario de Cotización</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f1f5f9;
-      margin: 0;
-      padding: 2rem;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      padding: 20px;
+      color: #333;
     }
 
     .formulario {
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
       max-width: 800px;
-      background: #fff;
       margin: auto;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     h1 {
-      color: #1e3a8a;
       text-align: center;
-      margin-bottom: 1.5rem;
+      color: #007BFF;
     }
 
     label {
       display: block;
-      margin-top: 1rem;
-      font-weight: 600;
+      margin-top: 10px;
+      font-weight: bold;
     }
 
-    input, button {
+    input {
       width: 100%;
-      padding: 0.6rem;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
       border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      margin-top: 0.3rem;
     }
 
     .concepto {
       display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     .concepto input {
       flex: 1;
     }
 
-    .btn-agregar, .btn-guardar {
-      margin-top: 1.5rem;
-      background: #1e3a8a;
+    button {
+      margin-top: 20px;
+      background-color: #007BFF;
       color: white;
-      font-weight: bold;
+      padding: 10px 15px;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
     }
 
-    .btn-agregar:hover, .btn-guardar:hover {
-      background: #3b82f6;
+    #agregarConcepto {
+      background-color: #6c757d;
     }
   </style>
 </head>
 <body>
-
-  <form class="formulario" onsubmit="guardarDatos(); return false;">
+  <div class="formulario">
     <h1>Formulario de Cotización</h1>
 
     <label for="cliente">Cliente</label>
-    <input type="text" id="cliente" required>
+    <input type="text" id="cliente">
 
     <label for="dependencia">Dependencia</label>
-    <input type="text" id="dependencia" required>
+    <input type="text" id="dependencia">
 
-    <label for="atencion">Con Atención a:</label>
-    <input type="text" id="atencion" required>
+    <label for="atencion">Con Atención a</label>
+    <input type="text" id="atencion">
 
-    <div id="lista-conceptos">
-      <h3>Conceptos</h3>
+    <h3>Conceptos</h3>
+    <div id="conceptos">
       <div class="concepto">
-        <input type="number" placeholder="Cantidad" class="cantidad" required>
-        <input type="text" placeholder="Descripción" class="descripcion" required>
-        <input type="number" placeholder="Precio Unitario" class="precio" step="0.01" required>
+        <input type="number" placeholder="Cantidad" class="cantidad">
+        <input type="text" placeholder="Descripción" class="descripcion">
+        <input type="number" step="0.01" placeholder="Precio" class="precio">
       </div>
     </div>
+    <button type="button" id="agregarConcepto" onclick="agregarConcepto()">Agregar otro concepto</button>
 
-    <button type="button" class="btn-agregar" onclick="agregarConcepto()">+ Agregar otro concepto</button>
-    <button type="submit" class="btn-guardar">Guardar y ver cotización</button>
-  </form>
+    <button onclick="guardarDatos()">Guardar y Generar Cotización</button>
+  </div>
 
   <script>
     function agregarConcepto() {
-      const lista = document.getElementById('lista-conceptos');
-      const div = document.createElement('div');
-      div.className = 'concepto';
-      div.innerHTML = `
-        <input type="number" placeholder="Cantidad" class="cantidad" required>
-        <input type="text" placeholder="Descripción" class="descripcion" required>
-        <input type="number" placeholder="Precio Unitario" class="precio" step="0.01" required>
+      const container = document.createElement('div');
+      container.className = 'concepto';
+      container.innerHTML = `
+        <input type="number" placeholder="Cantidad" class="cantidad">
+        <input type="text" placeholder="Descripción" class="descripcion">
+        <input type="number" step="0.01" placeholder="Precio" class="precio">
       `;
-      lista.appendChild(div);
+      document.getElementById('conceptos').appendChild(container);
     }
 
     function guardarDatos() {
@@ -122,23 +120,35 @@
       const subtotal = conceptos.reduce((acc, c) => acc + (c.cantidad * c.precio), 0);
       const iva = +(subtotal * 0.16).toFixed(2);
       const total = +(subtotal + iva).toFixed(2);
-
       const folio = String(Math.floor(Math.random() * 9999)).padStart(4, '0') + '-' + new Date().getFullYear();
 
-      localStorage.setItem('cotizacionActual', JSON.stringify({
-        numero: folio,
+      const data = {
         cliente,
         dependencia,
         atencion,
         conceptos,
         subtotal: subtotal.toFixed(2),
         iva: iva.toFixed(2),
-        total: total.toFixed(2)
-      }));
+        total: total.toFixed(2),
+        folio
+      };
 
-      window.location.href = 'cotizacion.html';
+      fetch('https://script.google.com/macros/s/TU_WEB_APP_URL/exec', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(r => r.json())
+      .then(res => {
+        console.log(res);
+        localStorage.setItem('cotizacionActual', JSON.stringify(data));
+        window.location.href = 'cotizacion.html';
+      })
+      .catch(err => alert('Error al guardar en Sheets: ' + err));
     }
   </script>
-
 </body>
 </html>
+
