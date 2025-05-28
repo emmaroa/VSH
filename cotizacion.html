@@ -1,115 +1,112 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Cotización</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
-      max-width: 700px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: white;
+      font-family: 'Arial', sans-serif;
+      background: white url('logo.png') no-repeat center center;
+      background-size: 300px;
+      background-blend-mode: lighten;
+      background-position: center;
+      padding: 40px;
+      color: #000;
     }
-    h1, h2 {
-      color: #0074D9;
+
+    .cotizacion {
+      background-color: rgba(255, 255, 255, 0.9);
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    #logo {
-      max-width: 150px;
-      margin-bottom: 20px;
+
+    h2 {
+      color: #007BFF;
+      text-align: center;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+
+    .conceptos {
       margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
     }
-    table, th, td {
-      border: 1px solid #0074D9;
-    }
-    th, td {
+
+    .conceptos th, .conceptos td {
+      border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
     }
-    tfoot td {
-      font-weight: bold;
-    }
-    .right {
+
+    .totales {
+      margin-top: 20px;
       text-align: right;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <div class="cotizacion">
+    <h2>Cotización</h2>
+    <p><strong>Fecha:</strong> <span id="fecha"></span></p>
+    <p><strong>Cliente:</strong> <span id="cliente"></span></p>
+    <p><strong>Dependencia:</strong> <span id="dependencia"></span></p>
+    <p><strong>Con Atención a:</strong> <span id="atencion"></span></p>
 
-  <img src="logo.png" alt="Logo de la empresa" id="logo" />
+    <table class="conceptos">
+      <thead>
+        <tr>
+          <th>Cantidad</th>
+          <th>Descripción</th>
+          <th>Precio Unitario</th>
+          <th>Importe</th>
+        </tr>
+      </thead>
+      <tbody id="tablaConceptos"></tbody>
+    </table>
 
-  <h1>Cotización</h1>
+    <div class="totales">
+      <p><strong>Subtotal:</strong> $<span id="subtotal"></span></p>
+      <p><strong>IVA (16%):</strong> $<span id="iva"></span></p>
+      <p><strong>Total:</strong> $<span id="total"></span></p>
+    </div>
 
-  <div id="datos-cliente"></div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Descripción</th>
-        <th>Cantidad</th>
-        <th>Precio Unitario</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody id="tabla-conceptos"></tbody>
-    <tfoot>
-      <tr>
-        <td colspan="3" class="right">Subtotal:</td>
-        <td id="subtotal"></td>
-      </tr>
-      <tr>
-        <td colspan="3" class="right">IVA (16%):</td>
-        <td id="iva"></td>
-      </tr>
-      <tr>
-        <td colspan="3" class="right">Total:</td>
-        <td id="total"></td>
-      </tr>
-    </tfoot>
-  </table>
+    <button onclick="window.print()">Imprimir</button>
+  </div>
 
   <script>
-    // Cargar datos guardados en localStorage
-    const datos = JSON.parse(localStorage.getItem('cotizacion'));
+    const datos = JSON.parse(localStorage.getItem('cotizacionActual'));
+    document.getElementById('fecha').textContent = new Date().toLocaleDateString();
+    document.getElementById('cliente').textContent = datos.cliente;
+    document.getElementById('dependencia').textContent = datos.dependencia;
+    document.getElementById('atencion').textContent = datos.atencion;
+    document.getElementById('subtotal').textContent = datos.subtotal;
+    document.getElementById('iva').textContent = datos.iva;
+    document.getElementById('total').textContent = datos.total;
 
-    if (!datos) {
-      document.body.innerHTML = "<h2>No hay datos de cotización para mostrar.</h2>";
-      throw new Error("No hay datos de cotización");
-    }
-
-    // Mostrar datos del cliente
-    document.getElementById('datos-cliente').innerHTML = `
-      <strong>Cliente:</strong> ${datos.cliente} <br />
-      <strong>Dependencia:</strong> ${datos.dependencia} <br />
-      <strong>Con Atención a:</strong> ${datos.atencion}
-    `;
-
-    // Mostrar los conceptos en tabla
-    const tbody = document.getElementById('tabla-conceptos');
-    datos.items.forEach(item => {
+    const tabla = document.getElementById('tablaConceptos');
+    datos.conceptos.forEach(c => {
       const fila = document.createElement('tr');
       fila.innerHTML = `
-        <td>${item.descripcion}</td>
-        <td>${item.cantidad}</td>
-        <td>$${item.precio.toFixed(2)}</td>
-        <td>$${item.total.toFixed(2)}</td>
+        <td>${c.cantidad}</td>
+        <td>${c.descripcion}</td>
+        <td>$${c.precio.toFixed(2)}</td>
+        <td>$${(c.cantidad * c.precio).toFixed(2)}</td>
       `;
-      tbody.appendChild(fila);
+      tabla.appendChild(fila);
     });
-
-    // Mostrar subtotal, IVA y total
-    document.getElementById('subtotal').textContent = "$" + datos.subtotal.toFixed(2);
-    document.getElementById('iva').textContent = "$" + datos.iva.toFixed(2);
-    document.getElementById('total').textContent = "$" + datos.total.toFixed(2);
   </script>
-
 </body>
 </html>
+
