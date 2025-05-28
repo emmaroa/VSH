@@ -1,112 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Cotización</title>
   <style>
+    @page {
+      margin: 20mm;
+    }
     body {
-      font-family: 'Arial', sans-serif;
-      background: white url('logo.png') no-repeat center center;
-      background-size: 300px;
-      background-blend-mode: lighten;
-      background-position: center;
-      padding: 40px;
-      color: #000;
-    }
-
-    .cotizacion {
-      background-color: rgba(255, 255, 255, 0.9);
+      font-family: Arial, sans-serif;
+      color: #333;
+      background: #f9fafc;
       max-width: 800px;
-      margin: auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      background-image: url('LOGO_URL_AQUI'); /* Cambia aquí por tu logo */
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 200px 200px;
+      opacity: 0.1;
+      background-attachment: fixed;
     }
-
+    .content {
+      position: relative;
+      opacity: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
     h2 {
-      color: #007BFF;
       text-align: center;
+      color: #2a4d8f;
+      margin-bottom: 10px;
     }
-
-    .conceptos {
-      margin-top: 20px;
-      border-collapse: collapse;
+    .datos-cliente {
+      margin-bottom: 20px;
+      border-bottom: 2px solid #2a4d8f;
+      padding-bottom: 10px;
+    }
+    .datos-cliente div {
+      margin: 6px 0;
+      font-size: 1rem;
+    }
+    table {
       width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
     }
-
-    .conceptos th, .conceptos td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
+    th, td {
+      border: 1px solid #bbb;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.95rem;
     }
-
-    .totales {
-      margin-top: 20px;
-      text-align: right;
-    }
-
-    button {
-      margin-top: 20px;
-      background-color: #007BFF;
+    th {
+      background-color: #2a4d8f;
       color: white;
-      padding: 10px 20px;
+    }
+    .totales {
+      float: right;
+      max-width: 320px;
+      margin-top: 10px;
+      border: 1px solid #2a4d8f;
+      padding: 15px;
+      border-radius: 6px;
+      background-color: #e9eff7;
+      color: #2a4d8f;
+    }
+    .totales div {
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    button#printBtn {
+      background-color: #2a4d8f;
+      color: white;
       border: none;
-      border-radius: 10px;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      border-radius: 6px;
       cursor: pointer;
+      display: block;
+      margin: 0 auto;
+      margin-top: 20px;
+      box-shadow: 0 4px 7px rgba(42, 77, 143, 0.4);
+    }
+    button#printBtn:hover {
+      background-color: #1e3670;
     }
   </style>
 </head>
 <body>
-  <div class="cotizacion">
-    <h2>Cotización</h2>
-    <p><strong>Fecha:</strong> <span id="fecha"></span></p>
-    <p><strong>Cliente:</strong> <span id="cliente"></span></p>
-    <p><strong>Dependencia:</strong> <span id="dependencia"></span></p>
-    <p><strong>Con Atención a:</strong> <span id="atencion"></span></p>
 
-    <table class="conceptos">
+  <div class="content">
+    <h2>COTIZACIÓN</h2>
+
+    <div class="datos-cliente">
+      <div><strong>Fecha:</strong> <span id="fecha"></span></div>
+      <div><strong>Cliente:</strong> <span id="cliente"></span></div>
+      <div><strong>Dependencia:</strong> <span id="dependencia"></span></div>
+      <div><strong>Con Atención a:</strong> <span id="atencion"></span></div>
+    </div>
+
+    <table>
       <thead>
         <tr>
           <th>Cantidad</th>
-          <th>Descripción</th>
-          <th>Precio Unitario</th>
-          <th>Importe</th>
+          <th>Concepto</th>
+          <th>Precio Unitario ($)</th>
+          <th>Importe ($)</th>
         </tr>
       </thead>
-      <tbody id="tablaConceptos"></tbody>
+      <tbody id="conceptosBody"></tbody>
     </table>
 
     <div class="totales">
-      <p><strong>Subtotal:</strong> $<span id="subtotal"></span></p>
-      <p><strong>IVA (16%):</strong> $<span id="iva"></span></p>
-      <p><strong>Total:</strong> $<span id="total"></span></p>
+      <div><span>Subtotal:</span> <span id="subtotal">$0.00</span></div>
+      <div><span>IVA (16%):</span> <span id="iva">$0.00</span></div>
+      <div><span>Total:</span> <span id="total">$0.00</span></div>
     </div>
 
-    <button onclick="window.print()">Imprimir</button>
+    <button id="printBtn" onclick="window.print()">Imprimir Cotización</button>
   </div>
 
   <script>
-    const datos = JSON.parse(localStorage.getItem('cotizacionActual'));
-    document.getElementById('fecha').textContent = new Date().toLocaleDateString();
-    document.getElementById('cliente').textContent = datos.cliente;
-    document.getElementById('dependencia').textContent = datos.dependencia;
-    document.getElementById('atencion').textContent = datos.atencion;
-    document.getElementById('subtotal').textContent = datos.subtotal;
-    document.getElementById('iva').textContent = datos.iva;
-    document.getElementById('total').textContent = datos.total;
+    const datos = window.opener?.cotizacionData || {
+      fecha: '',
+      cliente: '',
+      dependencia: '',
+      atencion: '',
+      conceptos: [],
+    };
 
-    const tabla = document.getElementById('tablaConceptos');
-    datos.conceptos.forEach(c => {
-      const fila = document.createElement('tr');
-      fila.innerHTML = `
-        <td>${c.cantidad}</td>
-        <td>${c.descripcion}</td>
-        <td>$${c.precio.toFixed(2)}</td>
-        <td>$${(c.cantidad * c.precio).toFixed(2)}</td>
+    document.getElementById('fecha').textContent = datos.fecha || '';
+    document.getElementById('cliente').textContent = datos.cliente || '';
+    document.getElementById('dependencia').textContent = datos.dependencia || '';
+    document.getElementById('atencion').textContent = datos.atencion || '';
+
+    const tbody = document.getElementById('conceptosBody');
+
+    let subtotal = 0;
+
+    datos.conceptos.forEach(({cantidad, concepto, precioUnitario}) => {
+      const importe = cantidad * precioUnitario;
+      subtotal += importe;
+
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${cantidad}</td>
+        <td style="text-align:left;">${concepto}</td>
+        <td>$${precioUnitario.toFixed(2)}</td>
+        <td>$${importe.toFixed(2)}</td>
       `;
-      tabla.appendChild(fila);
+      tbody.appendChild(tr);
     });
+
+    const iva = subtotal * 0.16;
+    const total = subtotal + iva;
+
+    document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('iva').textContent = `$${iva.toFixed(2)}`;
+    document.getElementById('total').textContent = `$${total.toFixed(2)}`;
   </script>
 </body>
 </html>
+
 
