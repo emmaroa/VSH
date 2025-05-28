@@ -2,90 +2,103 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Formulario de Cotización</title>
+  <title>Cotización</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f3f4f6;
       margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #1e3a8a;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
-    .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      background: white;
-      border-radius: 10px;
+      background: #f8fafc;
       padding: 2rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
+
+    .marca-agua {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0.08;
+      z-index: 0;
+      width: 70%;
+    }
+
+    .contenedor {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 900px;
+      margin: auto;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .encabezado {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
     .logo {
-      max-width: 150px;
-      margin-bottom: 1rem;
+      max-height: 80px;
     }
-    .grupo {
-      margin-bottom: 1rem;
+
+    .titulo {
+      font-size: 1.5rem;
+      color: #1e3a8a;
     }
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 0.3rem;
+
+    .datos {
+      margin-bottom: 2rem;
     }
-    input {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+
+    .datos p {
+      margin: 0.3rem 0;
     }
+
     table {
       width: 100%;
-      margin-top: 1rem;
       border-collapse: collapse;
+      margin-bottom: 2rem;
     }
+
     th, td {
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      text-align: center;
+      border: 1px solid #e5e7eb;
+      padding: 0.8rem;
+      text-align: left;
     }
+
     th {
-      background-color: #e5e7eb;
+      background-color: #eff6ff;
     }
-    .boton {
-      background-color: #2563eb;
-      color: white;
-      padding: 0.7rem 1.5rem;
-      border: none;
-      border-radius: 6px;
+
+    .totales {
+      text-align: right;
       font-size: 1rem;
-      cursor: pointer;
-      margin-top: 1rem;
+    }
+
+    .totales div {
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Formulario de Cotización</h1>
-  </header>
 
-  <div class="container">
-    <img src="logo.png" alt="Logo" class="logo">
+  <!-- Marca de agua -->
+  <img src="logo.png" class="marca-agua" alt="Marca de agua">
 
-    <div class="grupo">
-      <label for="cliente">Cliente</label>
-      <input type="text" id="cliente" required>
+  <div class="contenedor">
+    <div class="encabezado">
+      <img src="logo.png" alt="Logo" class="logo">
+      <div class="titulo">Cotización N.º <span id="cot-numero">0001</span></div>
     </div>
-    <div class="grupo">
-      <label for="dependencia">Dependencia</label>
-      <input type="text" id="dependencia">
-    </div>
-    <div class="grupo">
-      <label for="atencion">Con Atención a:</label>
-      <input type="text" id="atencion">
+
+    <div class="datos">
+      <p><strong>Cliente:</strong> <span id="cot-cliente"></span></p>
+      <p><strong>Dependencia:</strong> <span id="cot-dependencia"></span></p>
+      <p><strong>Con Atención a:</strong> <span id="cot-atencion"></span></p>
+      <p><strong>Fecha:</strong> <span id="cot-fecha"></span></p>
     </div>
 
     <table id="tabla-conceptos">
@@ -94,97 +107,48 @@
           <th>Cantidad</th>
           <th>Descripción</th>
           <th>Precio Unitario</th>
+          <th>Importe</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="item">
-          <td><input type="number" class="cantidad"></td>
-          <td><input type="text" class="descripcion"></td>
-          <td><input type="number" class="precio" step="0.01"></td>
-        </tr>
+        <!-- Se llena con JavaScript -->
       </tbody>
     </table>
 
-    <button type="button" class="boton" onclick="agregarFila()">+ Agregar concepto</button>
-    <button type="button" class="boton" onclick="guardarDatos()">Guardar Cotización</button>
+    <div class="totales">
+      <div><strong>Subtotal:</strong> $<span id="cot-subtotal">0.00</span></div>
+      <div><strong>IVA (16%):</strong> $<span id="cot-iva">0.00</span></div>
+      <div><strong>Total:</strong> $<span id="cot-total">0.00</span></div>
+    </div>
   </div>
 
   <script>
-    function agregarFila() {
-      const tabla = document.querySelector('#tabla-conceptos tbody');
-      const fila = tabla.rows[0].cloneNode(true);
-      fila.querySelectorAll('input').forEach(input => input.value = '');
-      tabla.appendChild(fila);
-    }
+    // Simular carga de localStorage
+    const datos = JSON.parse(localStorage.getItem('cotizacionActual'));
 
-    function obtenerNumeroCotizacion() {
-      let num = localStorage.getItem('numeroCotizacion');
-      num = num ? parseInt(num) + 1 : 1;
-      localStorage.setItem('numeroCotizacion', num);
-      return num;
-    }
+    if (datos) {
+      document.getElementById('cot-numero').textContent = datos.numero;
+      document.getElementById('cot-cliente').textContent = datos.cliente;
+      document.getElementById('cot-dependencia').textContent = datos.dependencia;
+      document.getElementById('cot-atencion').textContent = datos.atencion;
+      document.getElementById('cot-fecha').textContent = new Date().toLocaleDateString();
 
-    function calcularTotales() {
-      let subtotal = 0;
-      document.querySelectorAll('.item').forEach(fila => {
-        const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
-        const precio = parseFloat(fila.querySelector('.precio').value) || 0;
-        subtotal += cantidad * precio;
+      // Agregar conceptos
+      const tablaBody = document.querySelector('#tabla-conceptos tbody');
+      datos.conceptos.forEach(c => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${c.cantidad}</td>
+          <td>${c.descripcion}</td>
+          <td>$${parseFloat(c.precio).toFixed(2)}</td>
+          <td>$${(c.cantidad * c.precio).toFixed(2)}</td>
+        `;
+        tablaBody.appendChild(fila);
       });
-      const iva = subtotal * 0.16;
-      const total = subtotal + iva;
-      return {
-        subtotal: subtotal.toFixed(2),
-        iva: iva.toFixed(2),
-        total: total.toFixed(2)
-      };
-    }
 
-    function obtenerConceptosTexto() {
-      const conceptos = [];
-      document.querySelectorAll('.item').forEach(fila => {
-        const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
-        const descripcion = fila.querySelector('.descripcion').value.trim();
-        const precio = parseFloat(fila.querySelector('.precio').value) || 0;
-        if (cantidad > 0 && descripcion) {
-          conceptos.push(`${cantidad} x ${descripcion} - $${(cantidad * precio).toFixed(2)}`);
-        }
-      });
-      return conceptos.join(', ');
-    }
-
-    async function guardarDatos() {
-      const numero = obtenerNumeroCotizacion();
-      const cliente = document.getElementById('cliente').value;
-      const dependencia = document.getElementById('dependencia').value;
-      const atencion = document.getElementById('atencion').value;
-      const totales = calcularTotales();
-      const conceptosTexto = obtenerConceptosTexto();
-
-      const datos = {
-        numero,
-        cliente,
-        dependencia,
-        atencion,
-        conceptos: conceptosTexto,
-        subtotal: totales.subtotal,
-        iva: totales.iva,
-        total: totales.total
-      };
-
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbx2oZmEywqnOH0vU0iPXROLXAMgsijTjTbRcK9-zEIwhZUWAp9dkz9f8KjIDi_dzaBtyQ/exec'; 
-
-      try {
-        const respuesta = await fetch(scriptURL, {
-          method: 'POST',
-          body: new URLSearchParams(datos)
-        });
-        const resultado = await respuesta.json();
-        alert(resultado.message);
-      } catch (err) {
-        alert("Error al enviar los datos.");
-        console.error(err);
-      }
+      document.getElementById('cot-subtotal').textContent = datos.subtotal;
+      document.getElementById('cot-iva').textContent = datos.iva;
+      document.getElementById('cot-total').textContent = datos.total;
     }
   </script>
 </body>
