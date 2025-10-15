@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Refacciones - Formulario</title>
+    <style>
+        :root {
+            --color-principal: #007bff;
+            --color-secundario: #f8f9fa;
+            --color-texto: #343a40;
+            --color-borde: #ced4da;
+            --color-sombra: rgba(0, 0, 0, 0.1);
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--color-secundario); margin: 0; padding: 20px; color: var(--color-texto); }
+        .contenedor-formulario { max-width: 800px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px var(--color-sombra); border-top: 5px solid var(--color-principal); }
+        .encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--color-borde); }
+        .logo-espacio { width: 150px; height: 50px; background-color: #e9ecef; border: 1px dashed var(--color-borde); display: flex; align-items: center; justify-content: center; color: var(--color-texto); font-size: 14px; border-radius: 4px; }
+        h1 { color: var(--color-principal); font-size: 28px; margin: 0; font-weight: 600; }
+        .grupo-campo { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-texto); }
+        input[type="date"], input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--color-borde); border-radius: 6px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s, box-shadow 0.3s; }
+        input:focus, textarea:focus { border-color: var(--color-principal); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); outline: none; }
+        textarea { resize: vertical; min-height: 100px; }
+        .seccion-costos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 15px; background-color: #e9ecef; border-radius: 8px; margin-top: 25px; }
+        .resultado { padding: 10px; text-align: center; border: 1px solid var(--color-borde); border-radius: 6px; background-color: #fff; }
+        .resultado p { margin: 0; font-size: 14px; color: var(--color-texto); }
+        .resultado strong { display: block; font-size: 20px; color: var(--color-principal); margin-top: 5px; }
+        /* Nuevos estilos para el botón de envío y mensaje de estado */
+        .botones-accion { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 30px; }
+        .botones-accion button { width: 100%; margin: 0; }
+        button { background-color: var(--color-principal); color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: 600; transition: background-color 0.3s, transform 0.1s; }
+        button:hover { background-color: #0056b3; }
+        button:active { transform: scale(0.99); }
+        #estadoMensaje {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: none;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            .contenedor-formulario, .contenedor-formulario * { visibility: visible; }
+            .contenedor-formulario { position: absolute; left: 0; top: 0; box-shadow: none; border: none; margin: 0; }
+            .botones-accion { display: none; }
+            #estadoMensaje { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-formulario">
+        <div class="encabezado">
+            <div class="logo-espacio">Ventas y Servicios en Hermosillo SA de CV</div>
+            <h1>Registro y Cotización de Refacciones</h1>
+        </div>
+
+        <form id="registroForm" onsubmit="enviarDatosGoogleSheet(event)">
+            <div class="grupo-campo"><label for="fecha">Fecha de Surtido:</label><input type="date" id="fecha" name="fecha" required></div>
+            <div class="grupo-campo"><label for="unidad">Unidad (Opcional):</label><input type="text" id="unidad" name="unidad" placeholder="Ej: 1550 o stock"></div>
+            <div class="grupo-campo"><label for="pedido">Descripción del Pedido/Refacciones:</label><textarea id="pedido" name="pedido" rows="4" placeholder="Lista detallada de las refacciones, códigos, etc." required></textarea></div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--color-borde); margin: 30px 0;">
+
+            <div class="seccion-costos">
+                <div class="grupo-campo">
+                    <label for="costoReal">Costo Real (sin IVA):</label>
+                    <input type="number" id="costoReal" name="costoReal" step="0.01" min="0" value="0.00" oninput="calcularCosto()" required>
+                </div>
+                <div class="grupo-campo">
+                    <label for="gananciaPct">Ganancia (%):</label>
+                    <input type="number" id="gananciaPct" name="gananciaPct" step="0.1" min="0" value="30.0" oninput="calcularCosto()" required>
+                </div>
+                <div class="resultado">
+                    <p>Costo a Vender (Base):</p>
+                    <strong id="costoVenderBase">$0.00</strong>
+                </div>
+            </div>
+
+            <div class="seccion-costos" style="grid-template-columns: 1fr;">
+                <div class="resultado">
+                    <p>Costo Final con IVA (16%):</p>
+                    <strong id="costoVenderIVA_display" style="color: green; font-size: 24px;">$0.00</strong>
+                </div>
+            </div>
+
+            <input type="hidden" id="costoFinalIVA" name="costoFinalIVA" value="0.00">
+
+            <div class="botones-accion">
+                <button type="submit">
+                    💾 Registrar y Guardar
+                </button>
+                <button type="button" onclick="generarCotizacion()" style="background-color: #4a5568;">
+                    Imprimir  🖨️
+                </button>
+            </div>
+            
+            <div id="estadoMensaje"></div>
+        </form>
+    </div>
+
+    <script>
+        const IVA_RATE = 0.16; 
+        
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyILJtwFGSMWwGfB3cmVw9UyqgDX83KTpEhNvI3nmwALCtEBcdt7s5sKecUN5j39zm4gw/exec"; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fechaInput = document.getElementById('fecha');
+            fechaInput.value = new Date().toISOString().split('T')[0];
+            calcularCosto();
+        });
+
+        function formatoMoneda(valor) {
+            return `$${valor.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        }
+        
+        function calcularCosto() {
+            const costoReal = parseFloat(document.getElementById('costoReal').value) || 0;
+            const gananciaPct = parseFloat(document.getElementById('gananciaPct').value) / 100 || 0;
+
+            const costoVenderBase = costoReal * (1 + gananciaPct);
+            const costoFinalIVA = costoVenderBase * (1 + IVA_RATE);
+
+            document.getElementById('costoVenderBase').textContent = formatoMoneda(costoVenderBase);
+            document.getElementById('costoVenderIVA_display').textContent = formatoMoneda(costoFinalIVA);
+            
+            document.getElementById('costoFinalIVA').value = costoFinalIVA.toFixed(2);
+        }
+
+        function generarCotizacion() {
+            calcularCosto(); 
+            window.print();
+        }
+
+     
+        async function enviarDatosGoogleSheet(event) {
+            event.preventDefault(); 
+            
+            const form = event.target;
+            const estadoMensaje = document.getElementById('estadoMensaje');
+            const botonEnvio = form.querySelector('button[type="submit"]');
+
+            estadoMensaje.style.display = 'block';
+            estadoMensaje.className = 'loading';
+            estadoMensaje.textContent = 'Enviando datos... por favor, espere.';
+            botonEnvio.disabled = true;
+
+            const data = new FormData(form);
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: data 
+                });
+
+                if (response.ok) {
+                    estadoMensaje.className = 'success';
+                    estadoMensaje.textContent = '¡Registro guardado con éxito en Google Sheets!';
+                    
+                    form.reset();
+                   
+                } else {
+                    throw new Error('Error al conectar con Google Sheets.');
+                }
+            } catch (error) {
+                console.error('Error de envío:', error);
+                estadoMensaje.className = 'error';
+                estadoMensaje.textContent = `Error al guardar. Revise la consola. Mensaje: ${error.message}`;
+            } finally {
+                setTimeout(() => {
+                    botonEnvio.disabled = false;
+                    estadoMensaje.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
